@@ -1,17 +1,47 @@
 ---
+import { ProductList } from "@/components";
+import Pagination from "@/components/shared/Pagination.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
+import { actions } from "astro:actions";
 import { getSession } from "auth-astro/server";
 
-const session = await getSession(Astro.request);
+// const session = await getSession(Astro.request);
 // console.log(session);
-const { user } = session ?? {};
+// const { user } = session ?? {};
+
+// accedo a los searchParams
+const searchParams = Astro.url.searchParams; // console.log(searchParams);
+const pageParam = Number(searchParams.get("page") ?? 1); // console.log(pageParam);
+
+// consultamos los productos mediante actions
+const { data, error } = await actions.getProductsByPage.safe({
+  page: pageParam,
+  limit: 12,
+});
+
+//esto puede quedar trabado pero no deberia falar
+if (error) {
+  return Astro.redirect("/");
+}
+
+// si voy a una pagina donde no hay productos, me lleva a la ultima
+if (data.products.length === 0) {
+  return Astro.redirect(`/?page=${totalPages}`);
+}
+// desestructuro
+const { products, totalPages } = data; // console.log(products);
 ---
 
 <MainLayout>
-  <h1 class="text-3xl">Home Page</h1>
-  <pre>
+  <h1 class="text-3xl">Listado de productos</h1>
+
+  <ProductList products={products} client:load />
+
+  <Pagination totalPages={totalPages} />
+
+  <!-- <pre>
     <code>
       {JSON.stringify(user, null, 2)}
     </code>
-  </pre>
+  </pre> -->
 </MainLayout>

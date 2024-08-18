@@ -1,0 +1,82 @@
+---
+import MainLayout from "@/layouts/MainLayout.astro";
+
+import { actions } from "astro:actions";
+import Pagination from "@/components/shared/Pagination.astro";
+import { Formatter } from "@/utils";
+import ProductImage from "@/components/products/ProductImage.astro";
+
+// accedo a los searchParams
+const searchParams = Astro.url.searchParams; // console.log(searchParams);
+const pageParam = Number(searchParams.get("page") ?? 1); // console.log(pageParam);
+
+// consultamos los productos mediante actions
+const { data, error } = await actions.getProductsByPage.safe({
+  page: pageParam,
+  limit: 12,
+});
+
+//esto puede quedar trabado pero no deberia falar
+if (error) {
+  return Astro.redirect("/");
+}
+
+// desestructuro
+const { products, totalPages } = data; // console.log(products);
+---
+
+<MainLayout title="Panel Administrativo">
+  <h1>Dashboard</h1>
+  <p>Listado de productos</p>
+
+  <div class="flex justify-end">
+    <a
+      href="/admin/products/new"
+      class="bg-blue-500 hover:bg-blue-700 py-2 px-4 rounded text-white transition-all"
+    >
+      Nuevo producto</a
+    >
+  </div>
+
+  <table class="w-full mt-5">
+    <thead>
+      <tr>
+        <th class="text-left">Imagen</th>
+        <th class="text-left">Titulo</th>
+        <th class="text-left">Precio</th>
+        <th class="text-left">Inventario</th>
+      </tr>
+    </thead>
+
+    <tbody
+      >{
+        products.map((product) => (
+          <tr>
+            <td>
+              {/* Esto da un error si no hay imagenes */}
+              <ProductImage
+                src={product.images.split(",")[0]}
+                alt={product.title}
+                className="w-16 h-16 object-cover"
+              />
+            </td>
+            <td>
+              <a
+                class="hover:underline cursor-pointer"
+                href={`/admin/products/${product.slug}`}
+              >
+                {product.title}
+              </a>
+            </td>
+            <td>{Formatter.currency(product.price)}</td>
+            <td>{product.stock}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+
+  <Pagination totalPages={totalPages} />
+</MainLayout>
+
+<!-- data-astro-prefetch="load" -->

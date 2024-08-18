@@ -1,11 +1,20 @@
 ---
-import Navbar from '@/components/shared/Navbar.astro';
+import Navbar from "@/components/shared/Navbar.astro";
+
+import "@/assets/styles/global.css";
+import ViewTransitions from "astro/components/ViewTransitions.astro";
 
 interface Props {
   title?: string;
+  description?: string;
+  image?: string;
 }
 
-const { title = 'Astro Store' } = Astro.props;
+const {
+  title = "Astro Store",
+  description = "Description",
+  image = "",
+} = Astro.props;
 ---
 
 <html lang="es">
@@ -15,11 +24,13 @@ const { title = 'Astro Store' } = Astro.props;
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+
+    <ViewTransitions />
   </head>
   <body>
     <Navbar />
 
-    <main class="container m-auto max-w-3xl px-5">
+    <main class="container m-auto max-w-5xl px-5 mt-20">
       <slot />
     </main>
   </body>
